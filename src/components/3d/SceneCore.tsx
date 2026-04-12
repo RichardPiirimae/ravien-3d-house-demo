@@ -90,7 +90,7 @@ interface Props {
   viewIndex?: number;
   onLoaded: () => void;
   onPosUpdate?: (pos: THREE.Vector3, target: THREE.Vector3) => void;
-  eventSource?: React.RefObject<HTMLDivElement>;
+  eventSource?: React.RefObject<HTMLDivElement | null>;
   frameloop?: "always" | "demand" | "never";
 }
 
