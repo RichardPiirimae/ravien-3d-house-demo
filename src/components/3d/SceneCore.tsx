@@ -101,7 +101,7 @@ export default function SceneCore({ mode, room, viewIndex = 0, onLoaded, onPosUp
   return (
     <Canvas
       className="absolute inset-0 w-full h-full"
-      shadows={THREE.PCFShadowMap}
+      shadows="soft"
       camera={{ fov: 42, near: 0.1, far: 1000, position: [65, 28, 85] }}
       dpr={[1, 1.5]}
       frameloop={frameloop}
