@@ -40,6 +40,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# large binary assets — upload to Vercel separately or use LFS
-public/*.fbx
+# large binary assets (glb kept out, fbx tracked for Vercel deploy)
 public/*.glb
