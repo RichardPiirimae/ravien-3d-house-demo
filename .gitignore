@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# large binary assets — upload to Vercel separately or use LFS
+public/*.fbx
+public/*.glb
