@@ -1,7 +1,5 @@
-import dynamic from "next/dynamic";
-
-const Experience = dynamic(() => import("@/components/Experience"), { ssr: false });
+import ClientEntry from "@/components/ClientEntry";
 
 export default function Home() {
-  return <Experience />;
+  return <ClientEntry />;
 }
