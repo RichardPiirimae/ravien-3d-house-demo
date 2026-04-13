@@ -85,7 +85,7 @@ export default function Experience() {
           viewIndex={viewIndex}
           onLoaded={handleLoaded}
           onPosUpdate={mode === "room" ? handlePosUpdate : undefined}
-          eventSource={heroRef}
+          eventSource={isMobile && mode === "exterior" ? undefined : heroRef}
           frameloop={mode === "room" || heroVisible ? "always" : "never"}
         />
       </div>
