@@ -37,6 +37,10 @@ export default function Experience() {
   const [heroVisible, setHeroVisible] = useState(true);
   const heroRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const touchDeltaRef = useRef(0);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchDir = useRef<"h" | "v" | null>(null);
 
   useEffect(() => {
     const el = heroRef.current;
@@ -48,6 +52,40 @@ export default function Experience() {
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
+
+  // Mobile swipe: horizontal → rotate model, vertical → scroll page
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el || !isMobile || mode !== "exterior") return;
+
+    const onStart = (e: TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+      touchDir.current = null;
+    };
+
+    const onMove = (e: TouchEvent) => {
+      const dx = e.touches[0].clientX - touchStartX.current;
+      const dy = e.touches[0].clientY - touchStartY.current;
+
+      if (!touchDir.current && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+        touchDir.current = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
+      }
+
+      if (touchDir.current === "h") {
+        e.preventDefault();
+        touchDeltaRef.current += dx;
+        touchStartX.current = e.touches[0].clientX;
+      }
+    };
+
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: false });
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+    };
+  }, [isMobile, mode]);
 
   const handleLoaded = useCallback(() => setLoaded(true), []);
 
@@ -86,6 +124,7 @@ export default function Experience() {
           onLoaded={handleLoaded}
           onPosUpdate={mode === "room" ? handlePosUpdate : undefined}
           eventSource={isMobile && mode === "exterior" ? undefined : heroRef}
+          touchDeltaRef={isMobile && mode === "exterior" ? touchDeltaRef : undefined}
           frameloop={mode === "room" || heroVisible ? "always" : "never"}
         />
       </div>

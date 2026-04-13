@@ -1,15 +1,16 @@
 "use client";
 
-import { Suspense, useEffect, useRef } from "react";
+import React, { Suspense, useEffect, useRef } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
-import React from "react";
 import * as THREE from "three";
 import HouseModel from "./HouseModel";
 import type { RoomDef } from "./rooms";
 
 // Resets camera to exterior position when returning from room mode
-function ExteriorCamera({ active }: { active: boolean }) {
+const ORBIT_TARGET = new THREE.Vector3(0, 5, 0);
+
+function ExteriorCamera({ active, touchDeltaRef }: { active: boolean; touchDeltaRef?: React.RefObject<number> }) {
   const { camera } = useThree();
   const wasActive = useRef(false);
   const orbitRef = useRef<any>(null);
@@ -18,12 +19,25 @@ function ExteriorCamera({ active }: { active: boolean }) {
     if (active && !wasActive.current) {
       camera.position.set(65, 28, 85);
       if (orbitRef.current) {
-        orbitRef.current.target.set(0, 5, 0);
+        orbitRef.current.target.copy(ORBIT_TARGET);
         orbitRef.current.update();
       }
     }
     wasActive.current = active;
   }, [active, camera]);
+
+  useFrame(() => {
+    if (!touchDeltaRef || touchDeltaRef.current === 0) return;
+    const dx = touchDeltaRef.current;
+    touchDeltaRef.current = 0;
+    const offset = camera.position.clone().sub(ORBIT_TARGET);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+    spherical.theta -= dx * 0.007;
+    offset.setFromSpherical(spherical);
+    camera.position.copy(ORBIT_TARGET).add(offset);
+    camera.lookAt(ORBIT_TARGET);
+    orbitRef.current?.update();
+  });
 
   if (!active) return null;
 
@@ -92,9 +106,10 @@ interface Props {
   onPosUpdate?: (pos: THREE.Vector3, target: THREE.Vector3) => void;
   eventSource?: React.RefObject<HTMLDivElement | null>;
   frameloop?: "always" | "demand" | "never";
+  touchDeltaRef?: React.RefObject<number>;
 }
 
-export default function SceneCore({ mode, room, viewIndex = 0, onLoaded, onPosUpdate, eventSource, frameloop = "always" }: Props) {
+export default function SceneCore({ mode, room, viewIndex = 0, onLoaded, onPosUpdate, eventSource, frameloop = "always", touchDeltaRef }: Props) {
   const hideRoof = mode === "room";
   const hideSecondFloor = mode === "room" && room?.floor === "ground";
 
@@ -139,7 +154,7 @@ export default function SceneCore({ mode, room, viewIndex = 0, onLoaded, onPosUp
         <HouseModel hideRoof={hideRoof} hideSecondFloor={hideSecondFloor} onLoaded={onLoaded} />
       </Suspense>
 
-      <ExteriorCamera active={mode === "exterior"} />
+      <ExteriorCamera active={mode === "exterior"} touchDeltaRef={touchDeltaRef} />
 
       {mode === "room" && room && (
         <RoomExplorer room={room} viewIndex={viewIndex} onPosUpdate={onPosUpdate} />
