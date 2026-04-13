@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import DotPattern from "./DotPattern";
 import CTAMarquee from "./CTAMarquee";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 // ── Hooks ──────────────────────────────────────────────────────────────────
 
@@ -340,6 +341,8 @@ export default function MarketingSections() {
   const { ref: capRef, inView: capInView } = useInView();
   const { ref: statsRef, inView: statsInView } = useInView();
   const { ref: procRef, inView: procInView } = useInView();
+  const isMobile = useIsMobile();
+  const px = isMobile ? "1.5rem" : "6rem";
   const [openStep, setOpenStep] = useState<string>("01");
 
   return (
@@ -366,7 +369,7 @@ export default function MarketingSections() {
         ref={stRef}
         style={{
           background: "var(--dark)",
-          padding: "11rem 6rem 10rem",
+          padding: `${isMobile ? "5rem 1.5rem" : "11rem 6rem 10rem"}`,
           position: "relative",
           overflow: "hidden",
           borderTop: "1px solid rgba(200,169,110,0.07)",
@@ -456,7 +459,7 @@ export default function MarketingSections() {
         ref={capRef}
         style={{
           background: "var(--dark)",
-          padding: "5rem 6rem",
+          padding: `3rem ${px}`,
           position: "relative",
           overflow: "hidden",
           borderTop: "1px solid rgba(200,169,110,0.07)",
@@ -529,7 +532,7 @@ export default function MarketingSections() {
         ref={procRef}
         style={{
           background: "var(--dark)",
-          padding: "8rem 6rem",
+          padding: `${isMobile ? "4rem 1.5rem" : "8rem 6rem"}`,
           borderTop: "1px solid rgba(200,169,110,0.07)",
           position: "relative",
           overflow: "hidden",

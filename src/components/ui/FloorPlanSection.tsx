@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { RoomDef } from "../3d/rooms";
 import { GROUND_ROOMS, SECOND_ROOMS } from "../3d/rooms";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface Props {
   onEnterRoom: (room: RoomDef) => void;
@@ -116,11 +117,13 @@ export default function FloorPlanSection({ onEnterRoom }: Props) {
   const [activeFloor, setActiveFloor] = useState<"ground" | "second">("second");
   const rooms  = activeFloor === "ground" ? GROUND_ROOMS : SECOND_ROOMS;
   const imgSrc = activeFloor === "ground" ? "/floorplan-ground.jpg" : "/floorplan-2nd.jpg";
+  const isMobile = useIsMobile();
+  const px = isMobile ? "1.5rem" : "6rem";
 
   return (
-    <section id="floor-plans" style={{ background: "var(--dark)", padding: "7rem 0 6rem", borderTop: "1px solid rgba(200,169,110,0.07)" }}>
+    <section id="floor-plans" style={{ background: "var(--dark)", padding: isMobile ? "5rem 0 4rem" : "7rem 0 6rem", borderTop: "1px solid rgba(200,169,110,0.07)" }}>
 
-      <div style={{ padding: "0 6rem", marginBottom: "3rem" }}>
+      <div style={{ padding: `0 ${px}`, marginBottom: "3rem" }}>
         <p style={{
           fontFamily: "var(--font-chakra), monospace",
           fontSize: "0.48rem",
@@ -167,7 +170,7 @@ export default function FloorPlanSection({ onEnterRoom }: Props) {
           textAlign: "center",
           marginTop: "1.5rem",
         }}>
-          Click a hotspot to enter in 3D
+          {isMobile ? "Tap a hotspot to enter in 3D" : "Click a hotspot to enter in 3D"}
         </p>
       </div>
     </section>

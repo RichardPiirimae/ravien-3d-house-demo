@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, ReactNode } from "react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const MARQUEE_ITEMS = [
   "Architecture Studios",
@@ -51,6 +52,7 @@ function VerticalMarquee({ children, speed = 22 }: { children: ReactNode; speed?
 
 export default function CTAMarquee() {
   const marqueeRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Opacity fade — only runs while the marquee is in the viewport
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function CTAMarquee() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      padding: "6rem",
+      padding: isMobile ? "4rem 1.5rem 7rem" : "6rem",
       overflow: "hidden",
       position: "relative",
     }}>
@@ -125,8 +127,8 @@ export default function CTAMarquee() {
         width: "100%",
         maxWidth: "1200px",
         display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "6rem",
+        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+        gap: isMobile ? "3rem" : "6rem",
         alignItems: "center",
       }}>
 
@@ -259,6 +261,7 @@ export default function CTAMarquee() {
             height: "620px",
             overflow: "hidden",
             animation: "fade-in-up 0.9s 0.3s both",
+            display: isMobile ? "none" : "block",
           }}
         >
           <VerticalMarquee speed={24}>
@@ -304,7 +307,7 @@ export default function CTAMarquee() {
       <div style={{
         position: "absolute",
         bottom: 0, left: 0, right: 0,
-        padding: "1.5rem 6rem",
+        padding: isMobile ? "1.5rem" : "1.5rem 6rem",
         borderTop: "1px solid rgba(200,169,110,0.07)",
         display: "flex",
         justifyContent: "space-between",
