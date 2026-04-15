@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useFBX } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
 // Colour palette for the building materials.
@@ -134,11 +134,6 @@ function buildMaterial(
   });
   mat.name = original.name;
 
-  // Preserve any texture maps that came with the FBX
-  const orig = original as THREE.MeshPhongMaterial;
-  if (orig.map) mat.map = orig.map;
-  if (orig.normalMap) mat.normalMap = orig.normalMap;
-
   return mat;
 }
 
@@ -159,7 +154,7 @@ interface Props {
 }
 
 export default function HouseModel({ hideRoof, hideSecondFloor = false, onLoaded }: Props) {
-  const model = useFBX("/hoone.fbx");
+  const { scene: model } = useGLTF("/hoone.glb");
   const initialized = useRef(false);
   const roofMeshes = useRef<THREE.Mesh[]>([]);
   const secondFloorMeshes = useRef<THREE.Mesh[]>([]);
@@ -214,8 +209,7 @@ export default function HouseModel({ hideRoof, hideSecondFloor = false, onLoaded
         const key = original.uuid;
         if (matCache.has(key)) return matCache.get(key)!;
 
-        const orig = original as THREE.MeshPhongMaterial;
-        const isTransparent = !!(orig.transparent && orig.opacity < 0.85);
+        const isTransparent = !!(original.transparent && (original as THREE.MeshStandardMaterial).opacity < 0.85);
         const preset = pickPreset(mesh.name || "", original.name || "", isTransparent);
         const newMat = buildMaterial(original, preset);
         matCache.set(key, newMat);
@@ -285,4 +279,4 @@ export default function HouseModel({ hideRoof, hideSecondFloor = false, onLoaded
   return <primitive object={model} />;
 }
 
-useFBX.preload("/hoone.fbx");
+useGLTF.preload("/hoone.glb");

@@ -40,5 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# large binary assets (glb kept out, fbx tracked for Vercel deploy)
-public/*.glb
+# large binary assets — FBX removed, hoone.glb tracked for Vercel deploy
+public/*.fbx
+public/hoone_opt.glb
