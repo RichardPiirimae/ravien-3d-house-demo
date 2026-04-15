@@ -204,9 +204,11 @@ export default function HouseModel({ hideRoof, hideSecondFloor = false, onLoaded
         ? mesh.material
         : [mesh.material];
 
-      const newMats = mats.map((original) => {
+      const newMats = mats.map((original, matIdx) => {
         if (!original) return new THREE.MeshStandardMaterial({ color: "#d0cbbe", side: THREE.DoubleSide });
-        const key = original.uuid;
+        // Key by mesh name + slot index so shared materials (GLB deduplication)
+        // don't cause every mesh to receive the first mesh's colour.
+        const key = `${mesh.name}__${matIdx}`;
         if (matCache.has(key)) return matCache.get(key)!;
 
         const isTransparent = !!(original.transparent && (original as THREE.MeshStandardMaterial).opacity < 0.85);
