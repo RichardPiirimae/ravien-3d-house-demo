@@ -116,7 +116,7 @@ export default function Experience() {
     <>
       <LoadingScreen loaded={loaded} />
 
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: isMobile && mode === "room" ? "auto" : "none" }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: isMobile && mode === "room" ? 15 : 0, pointerEvents: isMobile && mode === "room" ? "auto" : "none" }}>
         <SceneCore
           mode={mode}
           room={selectedRoom}
@@ -125,6 +125,7 @@ export default function Experience() {
           onPosUpdate={mode === "room" ? handlePosUpdate : undefined}
           eventSource={isMobile ? undefined : heroRef}
           touchDeltaRef={isMobile && mode === "exterior" ? touchDeltaRef : undefined}
+          isMobile={isMobile}
           frameloop={mode === "room" || heroVisible ? "always" : "never"}
         />
       </div>

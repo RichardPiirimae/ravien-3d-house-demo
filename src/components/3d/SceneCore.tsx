@@ -107,9 +107,20 @@ interface Props {
   eventSource?: React.RefObject<HTMLDivElement | null>;
   frameloop?: "always" | "demand" | "never";
   touchDeltaRef?: React.RefObject<number>;
+  isMobile?: boolean;
 }
 
-export default function SceneCore({ mode, room, viewIndex = 0, onLoaded, onPosUpdate, eventSource, frameloop = "always", touchDeltaRef }: Props) {
+function MobileFOV({ fov }: { fov: number }) {
+  const { camera } = useThree();
+  useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera;
+    cam.fov = fov;
+    cam.updateProjectionMatrix();
+  }, [camera, fov]);
+  return null;
+}
+
+export default function SceneCore({ mode, room, viewIndex = 0, onLoaded, onPosUpdate, eventSource, frameloop = "always", touchDeltaRef, isMobile }: Props) {
   const hideRoof = mode === "room";
   const hideSecondFloor = mode === "room" && room?.floor === "ground";
 
@@ -128,6 +139,7 @@ export default function SceneCore({ mode, room, viewIndex = 0, onLoaded, onPosUp
         gl.toneMappingExposure = 0.75;
       }}
     >
+      {isMobile && <MobileFOV fov={62} />}
       <color attach="background" args={["#0f0d0b"]} />
       <fog attach="fog" args={["#0f0d0b", 220, 650]} />
 
