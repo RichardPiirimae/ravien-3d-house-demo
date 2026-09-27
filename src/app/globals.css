@@ -1,78 +1,81 @@
 @import "tailwindcss";
 
-:root {
-  --accent: #c8a96e;
-  --dark: #0f0d0b;
-  --cream: #f0ead8;
-}
-
 @theme inline {
-  --font-cormorant: var(--font-cormorant);
-  --font-chakra: var(--font-chakra);
+  --color-bg: #f5f5f3;
+  --color-surface: #ffffff;
+  --color-ink: #151617;
+  --color-muted: #5b5f64;
+  --color-line: #e2e2de;
+  --color-accent: #1f4d3a;
+  --color-accent-hover: #173c2c;
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-/* Isolate heavy sections from scroll repaints */
-section {
-  contain: layout paint;
+html { scroll-behavior: smooth; scroll-padding-top: 4rem; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
 body {
-  background: var(--dark);
-  color: var(--cream);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum" 1;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
-::selection {
-  background: rgba(200, 169, 110, 0.25);
-}
+::selection { background: var(--color-accent); color: #fff; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
+html { scrollbar-color: #b9bab5 var(--color-bg); }
+a { text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
 
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+.display { font-stretch: 112%; font-weight: 600; letter-spacing: -0.025em; }
 
-@keyframes load-sweep {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(200%);
-  }
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  height: 48px; padding: 0 22px; border-radius: 999px;
+  font-weight: 500; font-size: 15px; text-decoration: none; white-space: nowrap;
+  transition: background-color 180ms, color 180ms, border-color 180ms, transform 180ms;
 }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--color-accent); color: #fff; }
+.btn-primary:hover { background: var(--color-accent-hover); }
+.btn-ghost { background: var(--color-surface); color: var(--color-ink); border: 1px solid var(--color-line); }
+.btn-ghost:hover { border-color: #c9cac5; }
 
-@keyframes scroll-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.9; }
+/* Floating toolbar over the model */
+.toolbar {
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px;
+  background: rgba(255, 255, 255, 0.92); border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(21, 22, 23, 0.06), 0 8px 24px -8px rgba(21, 22, 23, 0.18);
 }
-
-@keyframes ping {
-  75%, 100% {
-    transform: scale(1.8);
-    opacity: 0;
-  }
+.toolbar button {
+  height: 36px; padding: 0 14px; border-radius: 999px;
+  font-size: 14px; font-weight: 500; color: var(--color-muted);
+  transition: background-color 160ms, color 160ms; cursor: pointer;
 }
+.toolbar button:hover { color: var(--color-ink); }
+.toolbar button[aria-pressed="true"] { background: var(--color-ink); color: #fff; }
+.toolbar.compact button { padding: 0 7px; font-size: 12.5px; }
+.toolbar.compact .sep { margin: 0 1px; }
+.toolbar .sep { width: 1px; height: 20px; background: var(--color-line); margin: 0 4px; }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.15; }
+/* Explode: native range */
+.pull { -webkit-appearance: none; appearance: none; background: transparent; width: 110px; height: 36px; cursor: ew-resize; }
+.pull::-webkit-slider-runnable-track { height: 3px; border-radius: 3px; background: var(--color-line); }
+.pull::-moz-range-track { height: 3px; border-radius: 3px; background: var(--color-line); }
+.pull::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px; margin-top: -7.5px; border-radius: 50%;
+  background: #fff; border: 1px solid #c9cac5; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
+.pull::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 1px solid #c9cac5; }
 
-@keyframes marquee-vertical {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-50%); }
-}
+/* Value change in the apartment readout */
+@keyframes rise { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+.rise { animation: rise 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
 }

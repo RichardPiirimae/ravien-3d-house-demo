@@ -1,41 +1,27 @@
-import type { Metadata } from "next";
-import { Cormorant_Garamond, Chakra_Petch } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Archivo } from "next/font/google";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
-  weight: ["300", "400"],
-  style: ["normal", "italic"],
-});
-
-const chakra = Chakra_Petch({
-  variable: "--font-chakra",
-  subsets: ["latin"],
-  weight: ["300", "400"],
+  axes: ["wdth"],
 });
 
 export const metadata: Metadata = {
-  title: "Ravien — 3D Experience",
-  description: "Immersive 3D architectural walkthrough",
+  title: "Ravien — Your building, live on the web",
+  description:
+    "Ravien turns Revit and FBX drawings into interactive 3D websites. Explore a live five-apartment house, straight from its drawings.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const viewport: Viewport = {
+  themeColor: "#f5f5f3",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${cormorant.variable} ${chakra.variable} h-full`}
-    >
-      <body
-        className="min-h-full"
-        style={{ fontFamily: "var(--font-chakra), monospace" }}
-      >
-        {children}
-      </body>
+    <html lang="en" className={archivo.variable}>
+      <body>{children}</body>
     </html>
   );
 }

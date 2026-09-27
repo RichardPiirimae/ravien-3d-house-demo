@@ -1,398 +1,211 @@
 "use client";
 
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import * as THREE from "three";
 import LoadingScreen from "./ui/LoadingScreen";
-import FloorPlanSection from "./ui/FloorPlanSection";
-import MarketingSections from "./ui/MarketingSections";
-import Footer from "./ui/Footer";
+import Header, { MAILTO, type SectionId } from "./ui/Header";
+import Compass from "./ui/Compass";
+import Schedule from "./ui/Schedule";
+import { Contact, Method } from "./ui/Sheets";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { RoomDef } from "./3d/rooms";
+import type { Display } from "./3d/HouseModel";
+import type { Inset, OrbitApi, ViewId } from "./3d/SceneCore";
 
 const SceneCore = dynamic(() => import("./3d/SceneCore"), { ssr: false });
 
-const navBtnStyle: React.CSSProperties = {
-  background: "none",
-  border: "1px solid rgba(200,169,110,0.35)",
-  color: "rgba(200,169,110,0.8)",
-  fontFamily: "monospace",
-  fontSize: "1rem",
-  width: "36px",
-  height: "36px",
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  transition: "border-color 0.2s",
-};
+const HEADER = 64;
+// Height reserved for the toolbar on phones.
+const MOBILE_BAR = 104;
+
+const VIEWS: { id: ViewId; label: string }[] = [
+  { id: "aerial", label: "Aerial" },
+  { id: "street", label: "Street" },
+  { id: "plan", label: "Plan" },
+];
+const DISPLAYS: { id: Display; label: string }[] = [
+  { id: "render", label: "Render" },
+  { id: "white", label: "White" },
+  { id: "lines", label: "Lines" },
+];
 
 export default function Experience() {
+  const isMobile = useIsMobile(899);
   const [loaded, setLoaded] = useState(false);
-  const [mode, setMode] = useState<"exterior" | "room">("exterior");
-  const [selectedRoom, setSelectedRoom] = useState<RoomDef | null>(null);
-  const [viewIndex, setViewIndex] = useState(0);
-  const [camPos, setCamPos] = useState<[number, number, number]>([0, 0, 0]);
-  const [camTarget, setCamTarget] = useState<[number, number, number]>([0, 0, 0]);
-  const [heroVisible, setHeroVisible] = useState(true);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
-  const touchDeltaRef = useRef(0);
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const touchDir = useRef<"h" | "v" | null>(null);
+  const [display, setDisplay] = useState<Display>("render");
+  const [view, setView] = useState<ViewId>("aerial");
+  const [explode, setExplode] = useState(0);
+  const [room, setRoom] = useState<RoomDef | null>(null);
+  const [roomView, setRoomView] = useState(0);
+  const [section, setSection] = useState<SectionId>("model");
+  const [stageVisible, setStageVisible] = useState(true);
+  const [vp, setVp] = useState({ w: 1440, h: 800 });
+  const stageRef = useRef<HTMLElement>(null);
+  const bearingRef = useRef<SVGGElement>(null);
+  const orbitApi = useRef<OrbitApi | null>(null);
 
   useEffect(() => {
-    const el = heroRef.current;
-    if (!el) return;
+    const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight });
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Which section is on screen: drives the nav, the camera and the cut.
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>("[data-section]");
     const obs = new IntersectionObserver(
-      ([entry]) => setHeroVisible(entry.isIntersecting),
-      { threshold: 0 }
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setSection(e.target.getAttribute("data-section") as SectionId);
+      },
+      { rootMargin: "-45% 0px -45% 0px" }
     );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => setStageVisible(e.isIntersecting));
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
-  // Mobile swipe: horizontal → rotate model, vertical → scroll page
-  useEffect(() => {
-    const el = heroRef.current;
-    if (!el || !isMobile || mode !== "exterior") return;
+  const inApartments = section === "apartments";
+  const stageH = vp.h - HEADER;
 
-    const onStart = (e: TouchEvent) => {
-      touchStartX.current = e.touches[0].clientX;
-      touchStartY.current = e.touches[0].clientY;
-      touchDir.current = null;
-    };
+  const inset: Inset = useMemo(() => {
+    if (isMobile) {
+      return inApartments
+        ? { top: 16, right: 0, bottom: Math.round(stageH * 0.5) + MOBILE_BAR, left: 0 }
+        : { top: 16, right: 0, bottom: Math.round(stageH * 0.3) + MOBILE_BAR, left: 0 };
+    }
+    // Desktop hero: the headline owns the left, the model the rest.
+    return inApartments
+      ? { top: 24, right: 0, bottom: 110, left: 520 }
+      : { top: 24, right: 0, bottom: 110, left: Math.round(vp.w * 0.4) };
+  }, [isMobile, inApartments, stageH, vp.w]);
 
-    const onMove = (e: TouchEvent) => {
-      const dx = e.touches[0].clientX - touchStartX.current;
-      const dy = e.touches[0].clientY - touchStartY.current;
+  const selectRoom = useCallback((r: RoomDef | null) => {
+    setRoom(r);
+    setRoomView(0);
+    if (r) setExplode(0);
+  }, []);
 
-      if (!touchDir.current && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
-        touchDir.current = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
-      }
-
-      if (touchDir.current === "h") {
-        e.preventDefault();
-        touchDeltaRef.current += dx;
-        touchStartX.current = e.touches[0].clientX;
-      }
-    };
-
-    el.addEventListener("touchstart", onStart, { passive: true });
-    el.addEventListener("touchmove", onMove, { passive: false });
-    return () => {
-      el.removeEventListener("touchstart", onStart);
-      el.removeEventListener("touchmove", onMove);
-    };
-  }, [isMobile, mode]);
+  // Leaving the apartments returns the camera to the whole building.
+  const activeRoom = inApartments ? room : null;
 
   const handleLoaded = useCallback(() => setLoaded(true), []);
 
-  const handleEnterRoom = useCallback((room: RoomDef) => {
-    setSelectedRoom(room);
-    setViewIndex(0);
-    setMode("room");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  const handleBackToPlans = useCallback(() => {
-    setMode("exterior");
-    setSelectedRoom(null);
-    setTimeout(() => {
-      document.getElementById("floor-plans")?.scrollIntoView({ behavior: "smooth" });
-    }, 50);
-  }, []);
-
-  const handlePosUpdate = useCallback((pos: THREE.Vector3, target: THREE.Vector3) => {
-    const r = (n: number) => Math.round(n * 10) / 10;
-    setCamPos([r(pos.x), r(pos.y), r(pos.z)]);
-    setCamTarget([r(target.x), r(target.y), r(target.z)]);
-  }, []);
-
-  const pad = isMobile ? "1.25rem" : "2.5rem";
+  const modelLeft = isMobile ? 0 : inset.left;
 
   return (
     <>
       <LoadingScreen loaded={loaded} />
+      <Header active={section} />
 
-      <div style={{ position: "fixed", inset: 0, zIndex: isMobile && mode === "room" ? 15 : 0, pointerEvents: isMobile && mode === "room" ? "auto" : "none" }}>
-        <SceneCore
-          mode={mode}
-          room={selectedRoom}
-          viewIndex={viewIndex}
-          onLoaded={handleLoaded}
-          onPosUpdate={mode === "room" ? handlePosUpdate : undefined}
-          eventSource={isMobile ? undefined : heroRef}
-          touchDeltaRef={isMobile && mode === "exterior" ? touchDeltaRef : undefined}
-          isMobile={isMobile}
-          frameloop={mode === "room" || heroVisible ? "always" : "never"}
-        />
-      </div>
+      <main className="pt-16">
+        <section id="model" ref={stageRef} className="relative">
+          {/* The model stays on screen while the intro and the apartments scroll over it */}
+          <div className="sticky top-16 h-[calc(100svh-4rem)] overflow-hidden">
+            <div className="absolute inset-0 cursor-grab active:cursor-grabbing">
+              <SceneCore
+                display={display}
+                view={view}
+                explode={explode}
+                room={activeRoom}
+                roomView={roomView}
+                cutaway={inApartments}
+                inset={inset}
+                isMobile={isMobile}
+                frameloop={stageVisible ? "always" : "never"}
+                onLoaded={handleLoaded}
+                bearingRef={bearingRef}
+                apiRef={orbitApi}
+              />
+            </div>
 
-      {/* ── Room overlay ── */}
-      {mode === "room" && selectedRoom && (
-        <div style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 50,
-          pointerEvents: "none",
-          padding: pad,
-        }}>
-          <button
-            onClick={handleBackToPlans}
-            style={{
-              pointerEvents: "all",
-              cursor: "pointer",
-              background: "rgba(10,8,6,0.7)",
-              backdropFilter: "blur(8px)",
-              border: "1px solid rgba(200,169,110,0.35)",
-              padding: "0.5rem 1.2rem",
-              fontFamily: "var(--font-chakra), monospace",
-              fontSize: "0.55rem",
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-              color: "rgba(200,169,110,0.7)",
-              marginBottom: "1rem",
-              display: "block",
-              transition: "border-color 0.2s",
-            }}
-          >
-            ← Floor Plan
-          </button>
-
-          <p style={{
-            fontFamily: "var(--font-chakra), monospace",
-            fontSize: "0.52rem",
-            letterSpacing: "0.3em",
-            textTransform: "uppercase",
-            color: "rgba(200,169,110,0.7)",
-            marginBottom: "0.3rem",
-          }}>
-            {selectedRoom.floor === "ground" ? "Ground Floor" : "2nd Floor"}
-          </p>
-          <h2 style={{
-            fontFamily: "var(--font-cormorant), serif",
-            fontSize: isMobile ? "clamp(1.8rem, 8vw, 2.8rem)" : "clamp(2rem, 4vw, 3.5rem)",
-            fontWeight: 300,
-            lineHeight: 1,
-            color: "#f0ead8",
-            marginBottom: "0.2rem",
-          }}>
-            {selectedRoom.label}
-          </h2>
-          <p style={{
-            fontFamily: "var(--font-cormorant), serif",
-            fontSize: isMobile ? "1.1rem" : "clamp(1.2rem, 2vw, 1.8rem)",
-            fontWeight: 300,
-            color: "var(--accent)",
-          }}>
-            {selectedRoom.area}
-          </p>
-          {!isMobile && (
-            <p style={{
-              fontFamily: "var(--font-chakra), monospace",
-              fontSize: "0.6rem",
-              letterSpacing: "0.08em",
-              color: "rgba(240,234,216,0.4)",
-              marginTop: "0.3rem",
-            }}>
-              {selectedRoom.desc}
-            </p>
-          )}
-
-          {/* Carousel */}
-          {selectedRoom.views.length > 1 && (
-            <div style={{
-              position: "absolute",
-              bottom: pad,
-              left: "50%",
-              transform: "translateX(-50%)",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              pointerEvents: "all",
-            }}>
-              <button onClick={() => setViewIndex(i => (i - 1 + selectedRoom.views.length) % selectedRoom.views.length)} style={navBtnStyle}>←</button>
-              <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
-                {selectedRoom.views.map((v, i) => (
-                  <button key={i} onClick={() => setViewIndex(i)} style={{
-                    width: i === viewIndex ? "20px" : "5px",
-                    height: "5px",
-                    borderRadius: "3px",
-                    background: i === viewIndex ? "rgba(200,169,110,0.9)" : "rgba(200,169,110,0.3)",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.3s",
-                    padding: 0,
-                  }} />
-                ))}
-              </div>
-              <button onClick={() => setViewIndex(i => (i + 1) % selectedRoom.views.length)} style={navBtnStyle}>→</button>
-              {selectedRoom.views[viewIndex]?.label && (
-                <div style={{
-                  position: "absolute",
-                  bottom: "2.2rem",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  fontFamily: "var(--font-chakra), monospace",
-                  fontSize: "0.45rem",
-                  letterSpacing: "0.25em",
-                  textTransform: "uppercase",
-                  color: "rgba(200,169,110,0.55)",
-                  whiteSpace: "nowrap",
-                }}>
-                  {selectedRoom.views[viewIndex].label}
+            <div
+              className="pointer-events-none absolute z-20 flex justify-center transition-[left] duration-500"
+              style={isMobile ? { left: 12, right: 12, bottom: inset.bottom - MOBILE_BAR + 16 } : { left: modelLeft, right: 0, bottom: 28 }}
+            >
+              <div className={`pointer-events-auto flex flex-wrap items-center justify-center gap-2 ${isMobile ? "max-w-[366px]" : ""}`} role="toolbar" aria-label="Model controls">
+                {/* Phones get one pill for view + finish, so the bar stays two rows */}
+                <div className={`toolbar ${isMobile ? "compact" : ""}`} role="group" aria-label="View">
+                  {VIEWS.map((v) => (
+                    <button key={v.id} aria-pressed={!activeRoom && view === v.id} onClick={() => { setRoom(null); setView(v.id); }}>
+                      {v.label}
+                    </button>
+                  ))}
+                  {isMobile && <span className="sep" aria-hidden />}
+                  {isMobile && DISPLAYS.map((d) => (
+                    <button key={d.id} aria-pressed={display === d.id} onClick={() => setDisplay(d.id)}>
+                      {d.label}
+                    </button>
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* Debug readout — desktop only */}
-          {!isMobile && (
-            <div style={{
-              position: "absolute",
-              bottom: "2rem",
-              right: "2rem",
-              fontFamily: "monospace",
-              fontSize: "0.55rem",
-              lineHeight: 1.6,
-              color: "rgba(200,169,110,0.5)",
-              background: "rgba(0,0,0,0.55)",
-              padding: "0.4rem 0.65rem",
-              pointerEvents: "none",
-            }}>
-              <div>pos:  [{camPos[0]}, {camPos[1]}, {camPos[2]}]</div>
-              <div>look: [{camTarget[0]}, {camTarget[1]}, {camTarget[2]}]</div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Scrollable content ── */}
-      <div style={{ position: "relative", zIndex: 10 }}>
-
-        {/* Hero */}
-        <div ref={heroRef} style={{ height: "100vh", position: "relative", cursor: "grab" }}>
-          <div
-            className="absolute inset-0 select-none flex flex-col justify-end"
-            style={{
-              padding: isMobile ? "2rem" : "4rem",
-              pointerEvents: "none",
-              opacity: mode === "room" ? 0 : 1,
-              transition: "opacity 0.4s",
-            }}
-          >
-            {/* Top-left label */}
-            <div className="absolute top-6 left-6" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <div style={{
-                width: 5, height: 5, borderRadius: "50%",
-                background: "rgba(200,169,110,0.8)",
-                boxShadow: "0 0 8px rgba(200,169,110,0.5)",
-                animation: "blink 2.5s infinite",
-              }} />
-              <span style={{
-                fontFamily: "var(--font-chakra), monospace",
-                fontSize: "0.45rem",
-                letterSpacing: "0.25em",
-                textTransform: "uppercase",
-                color: "rgba(200,169,110,0.5)",
-              }}>
-                Ravien Studio · 3D Experience
-              </span>
-            </div>
-
-            {/* Top-right coords — desktop only */}
-            {!isMobile && mode === "exterior" && (
-              <div className="absolute top-8 right-8" style={{
-                fontFamily: "var(--font-chakra), monospace",
-                fontSize: "0.42rem",
-                letterSpacing: "0.15em",
-                color: "rgba(200,169,110,0.2)",
-                textAlign: "right",
-                lineHeight: 1.8,
-              }}>
-                <div>59°26′N 24°45′E</div>
-                <div>5 APT · 2 FL · 12×24M</div>
+                {!isMobile && (
+                  <div className="toolbar" role="group" aria-label="Finish">
+                    {DISPLAYS.map((d) => (
+                      <button key={d.id} aria-pressed={display === d.id} onClick={() => setDisplay(d.id)}>
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <label className="toolbar pl-4 pr-3">
+                  <span className="text-[14px] font-medium text-muted">Explode</span>
+                  <input
+                    type="range" min={0} max={1} step={0.01} value={explode}
+                    onChange={(e) => { setRoom(null); setExplode(+e.target.value); }}
+                    className="pull" aria-label="Explode floors"
+                  />
+                </label>
               </div>
-            )}
+            </div>
 
-            <p style={{
-              fontFamily: "var(--font-chakra), monospace",
-              fontSize: "0.6rem",
-              letterSpacing: "0.3em",
-              textTransform: "uppercase",
-              color: "var(--accent)",
-              marginBottom: "0.8rem",
-              opacity: 0,
-              animation: "fade-up 1s 0.3s forwards",
-            }}>
-              Studio Project
-            </p>
-            <h1 style={{
-              fontFamily: "var(--font-cormorant), serif",
-              fontSize: isMobile ? "clamp(2.8rem, 12vw, 5rem)" : "clamp(3rem, 7vw, 6rem)",
-              fontWeight: 300,
-              lineHeight: 0.95,
-              letterSpacing: "-0.02em",
-              opacity: 0,
-              animation: "fade-up 1s 0.5s forwards",
-            }}>
-              Organic<br />
-              <em style={{ fontStyle: "italic", color: "var(--accent)" }}>Architecture</em>
-            </h1>
-            <p style={{
-              marginTop: "1.2rem",
-              fontFamily: "var(--font-chakra), monospace",
-              fontSize: "0.62rem",
-              letterSpacing: "0.15em",
-              color: "rgba(240,234,216,0.35)",
-              opacity: 0,
-              animation: "fade-up 1s 0.7s forwards",
-            }}>
-              5 apartments · 2 floors · 12 × 24 m
-            </p>
-            <p style={{
-              marginTop: "0.6rem",
-              fontFamily: "var(--font-chakra), monospace",
-              fontSize: "0.5rem",
-              letterSpacing: "0.2em",
-              color: "rgba(240,234,216,0.2)",
-              opacity: 0,
-              animation: "fade-up 1s 0.9s forwards",
-            }}>
-              {isMobile ? "Touch to rotate · Scroll to explore" : "Drag to rotate · Scroll to explore"}
-            </p>
-
-            <div className="absolute flex flex-col items-center gap-2" style={{
-              bottom: "2rem",
-              left: "50%",
-              transform: "translateX(-50%)",
-              opacity: 0,
-              animation: "fade-up 1s 1.4s forwards",
-            }}>
-              <div style={{
-                fontFamily: "var(--font-chakra), monospace",
-                fontSize: "0.5rem",
-                letterSpacing: "0.3em",
-                textTransform: "uppercase",
-                color: "rgba(200,169,110,0.4)",
-              }}>
-                Scroll
-              </div>
-              <div style={{
-                width: "1px", height: "32px",
-                background: "linear-gradient(to bottom, rgba(200,169,110,0.4), transparent)",
-                animation: "scroll-pulse 2s 1.5s infinite",
-              }} />
+            <div className="absolute z-20" style={isMobile ? { right: 12, top: 12 } : { right: 32, bottom: 28 }}>
+              <Compass gRef={bearingRef} apiRef={orbitApi} small={isMobile} />
             </div>
           </div>
-        </div>
 
-        <FloorPlanSection onEnterRoom={handleEnterRoom} />
-        <MarketingSections />
-        <Footer />
-      </div>
+          <div className="pointer-events-none relative z-10 -mt-[calc(100svh-4rem)]">
+            {/* Intro */}
+            <div data-section="model" className="flex h-[calc(100svh-4rem)] flex-col justify-end px-5 pb-8 md:px-10 min-[900px]:pb-32">
+              <h1 className="display max-w-[11ch] text-[clamp(2.1rem,5.2vw,4.8rem)] leading-[0.98]">
+                Your building, live on the web.
+              </h1>
+              <p className="mt-3 text-[16px] leading-snug text-muted min-[900px]:hidden">
+                Ravien turns Revit and FBX drawings into live 3D websites.
+              </p>
+              <p className="mt-5 max-w-[40ch] text-[17px] leading-relaxed text-muted max-[899px]:!hidden">
+                Ravien turns Revit and FBX drawings into interactive 3D websites. This house is one: five apartments over two floors, running live in your browser.
+              </p>
+              <div className="pointer-events-auto mt-5 flex flex-wrap gap-3 md:mt-7">
+                <a href={MAILTO} className="btn btn-primary">Start a project</a>
+                <a href="#apartments" className="btn btn-ghost max-[899px]:!hidden">Explore the apartments</a>
+              </div>
+            </div>
+
+            {/* Apartments */}
+            <div id="apartments" data-section="apartments" className="relative h-[calc(100svh-4rem)]">
+              <div
+                className={`pointer-events-auto absolute bg-bg ${
+                  isMobile
+                    ? "inset-x-0 bottom-0 h-[calc((100svh-4rem)*0.5)] overflow-y-auto border-t border-line px-5 pb-10 pt-6"
+                    : "inset-y-0 left-0 w-[520px] overflow-y-auto border-r border-line px-10 pb-8 pt-10"
+                }`}
+              >
+                <Schedule room={activeRoom} roomView={roomView} onSelect={selectRoom} onView={setRoomView} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <Method />
+        <Contact />
+      </main>
     </>
   );
 }

@@ -43,3 +43,10 @@ next-env.d.ts
 # large binary assets — FBX removed, hoone.glb tracked for Vercel deploy
 public/*.fbx
 public/hoone_opt.glb
+
+# impeccable scratch (screenshots, caches, decision page)
+/.impeccable/review/
+/.impeccable/hook.cache.json
+/.impeccable/decision.json
+/.impeccable/mocks/
+/.impeccable/questions/

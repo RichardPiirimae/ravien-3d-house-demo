@@ -1,0 +1,567 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-27T23:50:00Z",
+  "title": "Design System: Ravien",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Forest Green",
+        "canonical": "#1f4d3a",
+        "oklch": "oklch(38.2% 0.061 164)",
+        "tonalRamp": [
+          "oklch(15% 0.061 164)",
+          "oklch(27% 0.061 164)",
+          "oklch(39% 0.061 164)",
+          "oklch(51% 0.061 164)",
+          "oklch(63% 0.061 164)",
+          "oklch(75% 0.061 164)",
+          "oklch(86% 0.061 164)",
+          "oklch(95% 0.061 164)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Deep Forest",
+        "canonical": "#173c2c",
+        "oklch": "oklch(32.4% 0.052 163)",
+        "tonalRamp": [
+          "oklch(15% 0.052 163)",
+          "oklch(27% 0.052 163)",
+          "oklch(39% 0.052 163)",
+          "oklch(51% 0.052 163)",
+          "oklch(63% 0.052 163)",
+          "oklch(75% 0.052 163)",
+          "oklch(86% 0.052 163)",
+          "oklch(95% 0.052 163)"
+        ]
+      },
+      "accent-tint": {
+        "role": "primary",
+        "displayName": "Green Wash",
+        "canonical": "#eaf0ec",
+        "oklch": "oklch(94.9% 0.008 157)",
+        "tonalRamp": [
+          "oklch(15% 0.008 157)",
+          "oklch(27% 0.008 157)",
+          "oklch(39% 0.008 157)",
+          "oklch(51% 0.008 157)",
+          "oklch(63% 0.008 157)",
+          "oklch(75% 0.008 157)",
+          "oklch(86% 0.008 157)",
+          "oklch(95% 0.008 157)"
+        ]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "canonical": "#f5f5f3",
+        "oklch": "oklch(97.0% 0.003 106)",
+        "tonalRamp": [
+          "oklch(15% 0.003 106)",
+          "oklch(27% 0.003 106)",
+          "oklch(39% 0.003 106)",
+          "oklch(51% 0.003 106)",
+          "oklch(63% 0.003 106)",
+          "oklch(75% 0.003 106)",
+          "oklch(86% 0.003 106)",
+          "oklch(95% 0.003 106)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 90)",
+        "tonalRamp": [
+          "oklch(15% 0.000 90)",
+          "oklch(27% 0.000 90)",
+          "oklch(39% 0.000 90)",
+          "oklch(51% 0.000 90)",
+          "oklch(63% 0.000 90)",
+          "oklch(75% 0.000 90)",
+          "oklch(86% 0.000 90)",
+          "oklch(95% 0.000 90)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Near Black",
+        "canonical": "#151617",
+        "oklch": "oklch(20.0% 0.003 248)",
+        "tonalRamp": [
+          "oklch(15% 0.003 248)",
+          "oklch(27% 0.003 248)",
+          "oklch(39% 0.003 248)",
+          "oklch(51% 0.003 248)",
+          "oklch(63% 0.003 248)",
+          "oklch(75% 0.003 248)",
+          "oklch(86% 0.003 248)",
+          "oklch(95% 0.003 248)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Slate Grey",
+        "canonical": "#5b5f64",
+        "oklch": "oklch(48.4% 0.009 254)",
+        "tonalRamp": [
+          "oklch(15% 0.009 254)",
+          "oklch(27% 0.009 254)",
+          "oklch(39% 0.009 254)",
+          "oklch(51% 0.009 254)",
+          "oklch(63% 0.009 254)",
+          "oklch(75% 0.009 254)",
+          "oklch(86% 0.009 254)",
+          "oklch(95% 0.009 254)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e2e2de",
+        "oklch": "oklch(91.2% 0.005 107)",
+        "tonalRamp": [
+          "oklch(15% 0.005 107)",
+          "oklch(27% 0.005 107)",
+          "oklch(39% 0.005 107)",
+          "oklch(51% 0.005 107)",
+          "oklch(63% 0.005 107)",
+          "oklch(75% 0.005 107)",
+          "oklch(86% 0.005 107)",
+          "oklch(95% 0.005 107)"
+        ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Stone",
+        "canonical": "#c9cac5",
+        "oklch": "oklch(83.7% 0.007 116)",
+        "tonalRamp": [
+          "oklch(15% 0.007 116)",
+          "oklch(27% 0.007 116)",
+          "oklch(39% 0.007 116)",
+          "oklch(51% 0.007 116)",
+          "oklch(63% 0.007 116)",
+          "oklch(75% 0.007 116)",
+          "oklch(86% 0.007 116)",
+          "oklch(95% 0.007 116)"
+        ]
+      },
+      "poche": {
+        "role": "neutral",
+        "displayName": "Poche Charcoal",
+        "canonical": "#222326",
+        "oklch": "oklch(25.6% 0.006 271)",
+        "tonalRamp": [
+          "oklch(15% 0.006 271)",
+          "oklch(27% 0.006 271)",
+          "oklch(39% 0.006 271)",
+          "oklch(51% 0.006 271)",
+          "oklch(63% 0.006 271)",
+          "oklch(75% 0.006 271)",
+          "oklch(86% 0.006 271)",
+          "oklch(95% 0.006 271)"
+        ]
+      },
+      "ghost-line": {
+        "role": "neutral",
+        "displayName": "Ghost Grey",
+        "canonical": "#8a8d91",
+        "oklch": "oklch(64.2% 0.007 255)",
+        "tonalRamp": [
+          "oklch(15% 0.007 255)",
+          "oklch(27% 0.007 255)",
+          "oklch(39% 0.007 255)",
+          "oklch(51% 0.007 255)",
+          "oklch(63% 0.007 255)",
+          "oklch(75% 0.007 255)",
+          "oklch(86% 0.007 255)",
+          "oklch(95% 0.007 255)"
+        ]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Ground Plane",
+        "canonical": "#e7e7e2",
+        "oklch": "oklch(92.7% 0.007 107)",
+        "tonalRamp": [
+          "oklch(15% 0.007 107)",
+          "oklch(27% 0.007 107)",
+          "oklch(39% 0.007 107)",
+          "oklch(51% 0.007 107)",
+          "oklch(63% 0.007 107)",
+          "oklch(75% 0.007 107)",
+          "oklch(86% 0.007 107)",
+          "oklch(95% 0.007 107)"
+        ]
+      },
+      "mat-glazing": {
+        "role": "material",
+        "displayName": "Glazing",
+        "canonical": "#a9bfc2",
+        "oklch": "oklch(78.9% 0.024 207)",
+        "tonalRamp": [
+          "oklch(15% 0.024 207)",
+          "oklch(27% 0.024 207)",
+          "oklch(39% 0.024 207)",
+          "oklch(51% 0.024 207)",
+          "oklch(63% 0.024 207)",
+          "oklch(75% 0.024 207)",
+          "oklch(86% 0.024 207)",
+          "oklch(95% 0.024 207)"
+        ]
+      },
+      "mat-metal": {
+        "role": "material",
+        "displayName": "Dark Aluminium",
+        "canonical": "#2b2d2f",
+        "oklch": "oklch(29.6% 0.005 248)",
+        "tonalRamp": [
+          "oklch(15% 0.005 248)",
+          "oklch(27% 0.005 248)",
+          "oklch(39% 0.005 248)",
+          "oklch(51% 0.005 248)",
+          "oklch(63% 0.005 248)",
+          "oklch(75% 0.005 248)",
+          "oklch(86% 0.005 248)",
+          "oklch(95% 0.005 248)"
+        ]
+      },
+      "mat-roof": {
+        "role": "material",
+        "displayName": "Roof Membrane",
+        "canonical": "#9a9c9e",
+        "oklch": "oklch(69.2% 0.004 248)",
+        "tonalRamp": [
+          "oklch(15% 0.004 248)",
+          "oklch(27% 0.004 248)",
+          "oklch(39% 0.004 248)",
+          "oklch(51% 0.004 248)",
+          "oklch(63% 0.004 248)",
+          "oklch(75% 0.004 248)",
+          "oklch(86% 0.004 248)",
+          "oklch(95% 0.004 248)"
+        ]
+      },
+      "mat-timber": {
+        "role": "material",
+        "displayName": "Timber",
+        "canonical": "#b88a5a",
+        "oklch": "oklch(66.7% 0.085 67)",
+        "tonalRamp": [
+          "oklch(15% 0.085 67)",
+          "oklch(27% 0.085 67)",
+          "oklch(39% 0.085 67)",
+          "oklch(51% 0.085 67)",
+          "oklch(63% 0.085 67)",
+          "oklch(75% 0.085 67)",
+          "oklch(86% 0.085 67)",
+          "oklch(95% 0.085 67)"
+        ]
+      },
+      "mat-plaster": {
+        "role": "material",
+        "displayName": "Plaster",
+        "canonical": "#f1efea",
+        "oklch": "oklch(95.2% 0.007 89)",
+        "tonalRamp": [
+          "oklch(15% 0.007 89)",
+          "oklch(27% 0.007 89)",
+          "oklch(39% 0.007 89)",
+          "oklch(51% 0.007 89)",
+          "oklch(63% 0.007 89)",
+          "oklch(75% 0.007 89)",
+          "oklch(86% 0.007 89)",
+          "oklch(95% 0.007 89)"
+        ]
+      },
+      "mat-facade": {
+        "role": "material",
+        "displayName": "Rendered Facade",
+        "canonical": "#e7e3da",
+        "oklch": "oklch(91.6% 0.013 87)",
+        "tonalRamp": [
+          "oklch(15% 0.013 87)",
+          "oklch(27% 0.013 87)",
+          "oklch(39% 0.013 87)",
+          "oklch(51% 0.013 87)",
+          "oklch(63% 0.013 87)",
+          "oklch(75% 0.013 87)",
+          "oklch(86% 0.013 87)",
+          "oklch(95% 0.013 87)"
+        ]
+      },
+      "mat-oak": {
+        "role": "material",
+        "displayName": "Oak",
+        "canonical": "#b99670",
+        "oklch": "oklch(69.6% 0.067 69)",
+        "tonalRamp": [
+          "oklch(15% 0.067 69)",
+          "oklch(27% 0.067 69)",
+          "oklch(39% 0.067 69)",
+          "oklch(51% 0.067 69)",
+          "oklch(63% 0.067 69)",
+          "oklch(75% 0.067 69)",
+          "oklch(86% 0.067 69)",
+          "oklch(95% 0.067 69)"
+        ]
+      },
+      "mat-concrete": {
+        "role": "material",
+        "displayName": "Concrete",
+        "canonical": "#b3b1ac",
+        "oklch": "oklch(76.1% 0.007 89)",
+        "tonalRamp": [
+          "oklch(15% 0.007 89)",
+          "oklch(27% 0.007 89)",
+          "oklch(39% 0.007 89)",
+          "oklch(51% 0.007 89)",
+          "oklch(63% 0.007 89)",
+          "oklch(75% 0.007 89)",
+          "oklch(86% 0.007 89)",
+          "oklch(95% 0.007 89)"
+        ]
+      },
+      "mat-door": {
+        "role": "material",
+        "displayName": "Doors",
+        "canonical": "#d6cfc4",
+        "oklch": "oklch(85.7% 0.017 79)",
+        "tonalRamp": [
+          "oklch(15% 0.017 79)",
+          "oklch(27% 0.017 79)",
+          "oklch(39% 0.017 79)",
+          "oklch(51% 0.017 79)",
+          "oklch(63% 0.017 79)",
+          "oklch(75% 0.017 79)",
+          "oklch(86% 0.017 79)",
+          "oklch(95% 0.017 79)"
+        ]
+      },
+      "mat-fitout": {
+        "role": "material",
+        "displayName": "Fit-out",
+        "canonical": "#dcd6cd",
+        "oklch": "oklch(87.8% 0.014 78)",
+        "tonalRamp": [
+          "oklch(15% 0.014 78)",
+          "oklch(27% 0.014 78)",
+          "oklch(39% 0.014 78)",
+          "oklch(51% 0.014 78)",
+          "oklch(63% 0.014 78)",
+          "oklch(75% 0.014 78)",
+          "oklch(86% 0.014 78)",
+          "oklch(95% 0.014 78)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero line only; Archivo widened to 112%."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "One sentence-case heading per section."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Sub-heads inside sections."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Muted running copy, 40-52ch, tabular figures."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, nav, toolbar segments, captions."
+      }
+    },
+    "shadows": [
+      {
+        "name": "float",
+        "value": "0 1px 2px rgba(21,22,23,0.06), 0 8px 24px -8px rgba(21,22,23,0.18)",
+        "purpose": "Toolbars and compass floating over the live model."
+      },
+      {
+        "name": "pin",
+        "value": "0 1px 3px rgba(0,0,0,0.2)",
+        "purpose": "Key-plan apartment markers and slider thumb."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control",
+        "value": "180ms",
+        "purpose": "Button colour, border and press transitions (toolbar 160ms)."
+      },
+      {
+        "name": "ease-rise",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "420ms rise-in for changed readout values; disabled under reduced motion."
+      },
+      {
+        "name": "loader-fade",
+        "value": "700ms",
+        "purpose": "Loading screen fade out."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "stage",
+        "value": "900px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ],
+    "scene": {
+      "horizon": "#f5f5f3",
+      "toneMapping": "neutral",
+      "ambientOcclusion": "N8AO radius 5, intensity 2.2, colour #1a1b1d",
+      "keyLight": "#fff3e2 at 2.6",
+      "hemisphere": "#f3f6f9 / #d9d4ca",
+      "sectionCut": "62% of storey height",
+      "shots": [
+        "Aerial fov 24",
+        "Street fov 40",
+        "Plan fov 14"
+      ],
+      "finishes": [
+        "Render (default)",
+        "White",
+        "Lines"
+      ]
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one commitment action: Start a project.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Start a project</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;height:48px;padding:0 22px;border-radius:999px;font-family:Archivo,system-ui,sans-serif;font-weight:500;font-size:15px;border:0;cursor:pointer;transition:background-color 180ms,border-color 180ms,transform 180ms}.ds-btn:active{transform:translateY(1px)}.ds-btn:focus-visible{outline:2px solid #1f4d3a;outline-offset:3px}.ds-btn-primary{background:#1f4d3a;color:#fff}.ds-btn-primary:hover{background:#173c2c}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action beside the primary.",
+      "html": "<button class=\"ds-btn-ghost\">Explore the apartments</button>",
+      "css": ".ds-btn-ghost{display:inline-flex;align-items:center;height:48px;padding:0 22px;border-radius:999px;font-family:Archivo,system-ui,sans-serif;font-weight:500;font-size:15px;background:#fff;color:#151617;border:1px solid #e2e2de;cursor:pointer;transition:border-color 180ms}.ds-btn-ghost:hover{border-color:#c9cac5}.ds-btn-ghost:focus-visible{outline:2px solid #1f4d3a;outline-offset:3px}"
+    },
+    {
+      "name": "Model Toolbar",
+      "kind": "custom",
+      "refersTo": "toolbar-segment",
+      "description": "Floating segmented pill over the live model; active segment inverts to ink.",
+      "html": "<div class=\"ds-toolbar\" role=\"group\"><button aria-pressed=\"true\">Render</button><button aria-pressed=\"false\">White</button><button aria-pressed=\"false\">Lines</button></div>",
+      "css": ".ds-toolbar{display:inline-flex;gap:4px;padding:4px;background:rgba(255,255,255,.92);border-radius:999px;box-shadow:0 1px 2px rgba(21,22,23,.06),0 8px 24px -8px rgba(21,22,23,.18);font-family:Archivo,system-ui,sans-serif}.ds-toolbar button{height:36px;padding:0 14px;border-radius:999px;border:0;background:transparent;font-size:14px;font-weight:500;color:#5b5f64;cursor:pointer;transition:background-color 160ms,color 160ms}.ds-toolbar button:hover{color:#151617}.ds-toolbar button[aria-pressed=true]{background:#151617;color:#fff}.ds-toolbar button:focus-visible{outline:2px solid #1f4d3a;outline-offset:3px}"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "header",
+      "description": "Fixed 64px header: display wordmark, muted section links, compact primary.",
+      "html": "<header class=\"ds-nav\"><a class=\"ds-nav-mark\">Ravien</a><a aria-current=\"true\">Model</a><a>Apartments</a><a>Process</a><a>Contact</a><button class=\"ds-nav-cta\">Start a project</button></header>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:28px;height:64px;padding:0 40px;background:#f5f5f3;border-bottom:1px solid #e2e2de;font-family:Archivo,system-ui,sans-serif}.ds-nav a{font-size:15px;color:#5b5f64;text-decoration:none;cursor:pointer}.ds-nav a:hover,.ds-nav a[aria-current]{color:#151617}.ds-nav .ds-nav-mark{font-size:22px;font-weight:600;font-stretch:112%;letter-spacing:-.02em;color:#151617;margin-right:12px}.ds-nav-cta{margin-left:auto;height:40px;padding:0 20px;border-radius:999px;border:0;background:#1f4d3a;color:#fff;font:500 14px Archivo,system-ui,sans-serif;cursor:pointer}.ds-nav-cta:hover{background:#173c2c}"
+    },
+    {
+      "name": "Apartment Row",
+      "kind": "custom",
+      "refersTo": "list-row-selected",
+      "description": "Schedule row between hairlines; selected fills Green Wash.",
+      "html": "<ul class=\"ds-rows\"><li><button aria-pressed=\"true\"><span><b>Apartment I</b><small>Ground floor · 3 bedrooms</small></span><em>100 m²</em></button></li><li><button aria-pressed=\"false\"><span><b>Apartment II</b><small>Ground floor · 1 bedroom</small></span><em>49 m²</em></button></li></ul>",
+      "css": ".ds-rows{list-style:none;margin:0;padding:0;border-top:1px solid #e2e2de;font-family:Archivo,system-ui,sans-serif;font-feature-settings:'tnum' 1}.ds-rows li{border-bottom:1px solid #e2e2de}.ds-rows button{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;width:100%;padding:14px 12px;border:0;background:transparent;text-align:left;cursor:pointer;transition:background-color 160ms}.ds-rows button:hover{background:#fff}.ds-rows button[aria-pressed=true]{background:#eaf0ec}.ds-rows b{display:block;font-size:17px;font-weight:500;color:#151617}.ds-rows button[aria-pressed=true] b{color:#1f4d3a}.ds-rows small{display:block;margin-top:2px;font-size:14px;color:#5b5f64}.ds-rows em{font-style:normal;font-size:17px;font-weight:500}"
+    },
+    {
+      "name": "Compass",
+      "kind": "custom",
+      "description": "Draggable plan dial: footprint, ticks, green view cone.",
+      "html": "<svg class=\"ds-compass\" viewBox=\"0 0 64 64\"><g stroke=\"#c9cac5\" stroke-width=\".6\"><line x1=\"32\" y1=\"3.5\" x2=\"32\" y2=\"5.5\" transform=\"rotate(45 32 32)\"/><line x1=\"32\" y1=\"3.5\" x2=\"32\" y2=\"5.5\" transform=\"rotate(135 32 32)\"/></g><g stroke=\"#5b5f64\"><line x1=\"32\" y1=\"3.5\" x2=\"32\" y2=\"7.5\"/><line x1=\"32\" y1=\"3.5\" x2=\"32\" y2=\"7.5\" transform=\"rotate(90 32 32)\"/><line x1=\"32\" y1=\"3.5\" x2=\"32\" y2=\"7.5\" transform=\"rotate(180 32 32)\"/><line x1=\"32\" y1=\"3.5\" x2=\"32\" y2=\"7.5\" transform=\"rotate(270 32 32)\"/></g><path d=\"M32 32 L21.5 57 A27 27 0 0 0 42.5 57 Z\" fill=\"#1f4d3a\" opacity=\".16\"/><circle cx=\"32\" cy=\"55\" r=\"2.6\" fill=\"#1f4d3a\"/><path d=\"M26 24 Q26 20 30 20 L34 20 Q38 20 38 24 L38 29 Q36.5 32 38 35 L38 40 Q38 44 34 44 L30 44 Q26 44 26 40 L26 35 Q27.5 32 26 29 Z\" fill=\"#f1f1ee\" stroke=\"#151617\"/></svg>",
+      "css": ".ds-compass{width:84px;height:84px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(21,22,23,.06),0 8px 24px -8px rgba(21,22,23,.18);cursor:grab}.ds-compass:active{cursor:grabbing}"
+    },
+    {
+      "name": "Material Swatch",
+      "kind": "chip",
+      "description": "Round swatch plus label for the render palette.",
+      "html": "<span class=\"ds-swatch\"><i style=\"background:#b88a5a\"></i>Timber columns</span>",
+      "css": ".ds-swatch{display:inline-flex;align-items:center;gap:12px;font:400 15px Archivo,system-ui,sans-serif;color:#151617}.ds-swatch i{width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Finished Building",
+    "overview": "The site presents like a serious construction or development company: the building is finished, photographed in good daylight, and handed over. A realistic render of the model is the default state and leads the first viewport; everything else steps back so it can be seen. The page is warm off-white with near-black type, one quiet forest green for commitment, and a great deal of air. Lines are rare and hairline; controls are few, grouped, and pill-shaped.\n\nThe model is lit as architecture, not as a product shot: a warm sun with soft shadows, a hemisphere sky, ambient occlusion in the corners, and neutral tone mapping so materials read at their true colour. The horizon and ground are tuned to the page background, so the canvas has no edge: the building sits on the page itself. Drawing conventions survive only where they carry information: solid charcoal poché where a section cut opens a wall, and faint grey ghost lines for the parts of the building lifted away.\n\nThe previous \"construction drawing set\" world (blue diazo ink, vellum, grid bubbles, title blocks, condensed caps) is retired and must not return.",
+    "keyCharacteristics": [
+      "Realistic render by default; White and Lines are alternative finishes, not the identity.",
+      "Warm off-white page (#f5f5f3) continuous with the 3D horizon.",
+      "One accent, forest green, reserved for commitment and selection.",
+      "Wide-axis Archivo display, sentence case, tight tracking; plain Archivo for everything else.",
+      "Pills for every control; hairlines for structure; almost no boxes."
+    ],
+    "rules": [
+      {
+        "name": "The One Green Rule",
+        "body": "Forest green marks commitment (Start a project) and the current selection. It never decorates, never fills a section, never appears twice as a competing call to action on one screen region.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Edge Rule",
+        "body": "The 3D horizon, fog and page background are the same Warm Paper. The canvas never gets a frame, border or contrasting backdrop.",
+        "section": "colors"
+      },
+      {
+        "name": "The Materials Carry Colour Rule",
+        "body": "Interface colour stays neutral so the timber, oak and glazing of the render are the only warm, saturated things on screen.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Widths Rule",
+        "body": "Only headings use the widened display cut. Everything else is normal-width Archivo. No second family, no uppercase tracking labels.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Headings, buttons, nav and toolbar labels are sentence case. Nothing is set in all caps.",
+        "section": "typography"
+      },
+      {
+        "name": "The Air Rule",
+        "body": "When in doubt, add space rather than a line or a box. Sections are separated by padding and a colour change, not rules.",
+        "section": "layout"
+      },
+      {
+        "name": "The Only Over The Model Rule",
+        "body": "A shadow means \"this floats above the live building.\" Page content never casts one.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** open on the Render finish from the Aerial shot; the realistic building is the first impression.",
+      "**Do** keep the 3D horizon, fog and page background identical (#f5f5f3) so the canvas has no edge.",
+      "**Do** use Forest Green only for the primary action, selection and focus.",
+      "**Do** make every control a pill and every surface square; float only what sits over the model.",
+      "**Do** keep copy sentence case, headings ending in a full stop, body in muted grey at 40–52ch.",
+      "**Do** show section cuts with solid charcoal poché and lifted parts as faint grey ghost lines."
+    ],
+    "donts": [
+      "**Don't** bring back the drawing-set world: no blue ink, vellum, grid bubbles, title blocks, sheet numbers or condensed uppercase labels.",
+      "**Don't** add a second accent colour to the interface; saturated colour belongs to the materials.",
+      "**Don't** frame the canvas with borders, grids or cards.",
+      "**Don't** add small uppercase labels above headings.",
+      "**Don't** add shadows to page content, panels or list rows."
+    ]
+  }
+}

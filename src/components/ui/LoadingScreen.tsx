@@ -1,44 +1,26 @@
 "use client";
 
-interface Props {
-  loaded: boolean;
-}
+import { useProgress } from "@react-three/drei";
 
-export default function LoadingScreen({ loaded }: Props) {
+export default function LoadingScreen({ loaded }: { loaded: boolean }) {
+  const { progress } = useProgress();
+  const p = loaded ? 100 : Math.min(99, Math.round(progress));
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center transition-[opacity,visibility] duration-700"
-      style={{
-        background: "var(--dark)",
-        opacity: loaded ? 0 : 1,
-        visibility: loaded ? "hidden" : "visible",
-        pointerEvents: loaded ? "none" : "auto",
-      }}
+      className="fixed inset-0 z-50 grid place-items-center bg-bg transition-[opacity,visibility] duration-700"
+      style={{ opacity: loaded ? 0 : 1, visibility: loaded ? "hidden" : "visible" }}
+      role="status"
+      aria-live="polite"
     >
-      <p
-        style={{
-          fontFamily: "var(--font-cormorant), serif",
-          fontSize: "1.5rem",
-          fontWeight: 300,
-          letterSpacing: "0.2em",
-          color: "var(--accent)",
-          marginBottom: "2rem",
-        }}
-      >
-        Loading model
-      </p>
-
-      <div
-        className="relative overflow-hidden"
-        style={{ width: "180px", height: "1px", background: "rgba(200,169,110,0.15)" }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "var(--accent)",
-            animation: "load-sweep 1.5s ease-in-out infinite",
-          }}
-        />
+      <div className="w-[min(320px,80vw)]">
+        <div className="display text-[28px]">Ravien</div>
+        <div className="mt-6 h-[3px] w-full overflow-hidden rounded-full bg-line">
+          <div className="h-full origin-left rounded-full bg-accent transition-transform duration-300" style={{ transform: `scaleX(${p / 100})` }} />
+        </div>
+        <div className="mt-3 flex justify-between text-[14px] text-muted">
+          <span>Loading the model</span>
+          <span className="tabular-nums">{p}%</span>
+        </div>
       </div>
     </div>
   );

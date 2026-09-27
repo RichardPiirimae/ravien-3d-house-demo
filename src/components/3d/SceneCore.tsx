@@ -1,176 +1,256 @@
 "use client";
+/* eslint-disable react-hooks/immutability -- three.js objects are mutated per frame by design */
 
-import React, { Suspense, useEffect, useRef } from "react";
-import { Canvas, useThree, useFrame } from "@react-three/fiber";
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
+import { EffectComposer, N8AO, SMAA, ToneMapping } from "@react-three/postprocessing";
+import { ToneMappingMode } from "postprocessing";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
-import HouseModel from "./HouseModel";
+import HouseModel, { type Display, type ModelInfo, type Section } from "./HouseModel";
 import type { RoomDef } from "./rooms";
 
-// Resets camera to exterior position when returning from room mode
-const ORBIT_TARGET = new THREE.Vector3(0, 5, 0);
+export type ViewId = "aerial" | "street" | "plan";
+/** Lets the compass dial turn the camera around its target. */
+export type OrbitApi = { setAzimuth: (rad: number) => void; rotateBy: (rad: number) => void };
+export type Inset = { top: number; right: number; bottom: number; left: number };
 
-function ExteriorCamera({ active, touchDeltaRef }: { active: boolean; touchDeltaRef?: React.RefObject<number> }) {
-  const { camera } = useThree();
-  const wasActive = useRef(false);
-  const orbitRef = useRef<any>(null);
+/** A camera shot: look at `look`, from direction `dir`, far enough to fit a sphere of `radius`. */
+interface Shot { look: THREE.Vector3; dir: THREE.Vector3; radius: number; fov: number; pad: number; mobilePad?: number }
 
-  useEffect(() => {
-    if (active && !wasActive.current) {
-      camera.position.set(65, 28, 85);
-      if (orbitRef.current) {
-        orbitRef.current.target.copy(ORBIT_TARGET);
-        orbitRef.current.update();
-      }
-    }
-    wasActive.current = active;
-  }, [active, camera]);
+// Plan shots tilt ~2° off vertical along +z so the drawing's top (−z) stays up on screen.
+// One perspective camera tweened between shots; a narrow FOV from far away
+// flattens the plan shot toward an orthographic drawing.
+const BUILDING_SHOTS: Record<ViewId, { dir: [number, number, number]; fov: number; pad: number; mobilePad?: number }> = {
+  aerial: { dir: [1, 0.75, 1.2], fov: 24, pad: 0.9 },
+  // Street's long, low view needs more room on a portrait screen.
+  street: { dir: [1.3, 0.16, 1.45], fov: 40, pad: 0.8, mobilePad: 1.15 },
+  plan: { dir: [0, 1, 0.03], fov: 14, pad: 0.95 },
+};
 
-  useFrame(() => {
-    if (!touchDeltaRef || touchDeltaRef.current === 0) return;
-    const dx = touchDeltaRef.current;
-    touchDeltaRef.current = 0;
-    const offset = camera.position.clone().sub(ORBIT_TARGET);
-    const spherical = new THREE.Spherical().setFromVector3(offset);
-    spherical.theta -= dx * 0.007;
-    offset.setFromSpherical(spherical);
-    camera.position.copy(ORBIT_TARGET).add(offset);
-    camera.lookAt(ORBIT_TARGET);
-    orbitRef.current?.update();
-  });
+// Plan cut: 62% of the storey height, high enough to read the rooms, low enough to see in.
+const cutFor = (info: ModelInfo, floor: "ground" | "second") => {
+  const { ground, groundCeil, upper, upperCeil } = info.levels;
+  return floor === "ground" ? ground + (groundCeil - ground) * 0.62 : upper + (upperCeil - upper) * 0.62;
+};
 
-  if (!active) return null;
-
-  return (
-    <OrbitControls
-      ref={orbitRef}
-      enableZoom={false}
-      enablePan={false}
-      autoRotate
-      autoRotateSpeed={0.4}
-      target={[0, 5, 0]}
-    />
-  );
+// The apartment's footprint in model coordinates, from its region on the plan.
+function roomBox(info: ModelInfo, r: RoomDef) {
+  const { min, max } = info.box;
+  const m = 1.2; // wide enough to keep party walls whole instead of slicing them
+  return {
+    x0: min.x + r.region.u0 * (max.x - min.x) - m,
+    x1: min.x + r.region.u1 * (max.x - min.x) + m,
+    z0: min.z + r.region.v0 * (max.z - min.z) - m,
+    z1: min.z + r.region.v1 * (max.z - min.z) + m,
+  };
 }
 
-// ── Room explorer — free orbit + position reporting ────────────
-function RoomExplorer({
-  room,
-  viewIndex,
-  onPosUpdate,
-}: {
-  room: RoomDef;
-  viewIndex: number;
-  onPosUpdate?: (pos: THREE.Vector3, target: THREE.Vector3) => void;
-}) {
-  const { camera } = useThree();
-  const orbitRef = useRef<any>(null);
-  const initialized = useRef(false);
-  const view = room.views[viewIndex] ?? room.views[0];
-
-  useEffect(() => {
-    initialized.current = false;
-  }, [room, viewIndex]);
-
-  useFrame(() => {
-    if (!initialized.current) {
-      camera.position.set(...view.camPos);
-      if (orbitRef.current) {
-        orbitRef.current.target.set(...view.camLook);
-        orbitRef.current.update();
-      }
-      initialized.current = true;
-    }
-    if (onPosUpdate && orbitRef.current) {
-      onPosUpdate(camera.position, orbitRef.current.target);
-    }
-  });
-
-  return (
-    <OrbitControls
-      ref={orbitRef}
-      enableZoom
-      enablePan
-      enableRotate
-      target={view.camLook as [number, number, number]}
-    />
-  );
+function roomShot(info: ModelInfo, r: RoomDef, view: number): Shot {
+  const b = roomBox(info, r);
+  const floorY = r.floor === "ground" ? info.levels.ground : info.levels.upper;
+  const h = cutFor(info, r.floor) - floorY;
+  const cx = (b.x0 + b.x1) / 2;
+  const cz = (b.z0 + b.z1) / 2;
+  const radius = 0.5 * Math.hypot(b.x1 - b.x0, b.z1 - b.z0, h);
+  const look = new THREE.Vector3(cx, floorY + h * 0.25, cz);
+  // Look in from the building's outside end, three-quarter on.
+  const out = new THREE.Vector2(Math.abs(cx) > 2 ? Math.sign(cx) : 0.75, Math.sign(cz) || 1).normalize();
+  if (view === 1) return { look, dir: new THREE.Vector3(0, 1, 0.03), radius, fov: 18, pad: 1.05 };
+  if (view === 2) return { look, dir: new THREE.Vector3(-out.x, 0.85, -out.y), radius, fov: 30, pad: 1.0 };
+  return { look, dir: new THREE.Vector3(out.x, 1.25, out.y), radius, fov: 30, pad: 1.0 };
 }
 
-// ── Main scene — single Canvas shared across all modes ─────────
-interface Props {
-  mode: "exterior" | "room";
-  room: RoomDef | null;
-  viewIndex?: number;
-  onLoaded: () => void;
-  onPosUpdate?: (pos: THREE.Vector3, target: THREE.Vector3) => void;
-  eventSource?: React.RefObject<HTMLDivElement | null>;
-  frameloop?: "always" | "demand" | "never";
-  touchDeltaRef?: React.RefObject<number>;
-  isMobile?: boolean;
+interface RigProps {
+  shot: Shot | null;
+  inset: Inset;
+  isMobile: boolean;
+  bearingRef?: React.RefObject<SVGGElement | null>;
+  apiRef?: React.RefObject<OrbitApi | null>;
 }
 
-function MobileFOV({ fov }: { fov: number }) {
-  const { camera } = useThree();
+function Rig({ shot, inset, isMobile, bearingRef, apiRef }: RigProps) {
+  const { camera, size: vp, gl } = useThree();
+  const cam = camera as THREE.PerspectiveCamera;
+  const controls = useRef<OrbitControlsImpl>(null);
+  const goal = useRef({ pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 38 });
+  const off = useRef({ x: 0, y: 0 });
+  const userHasControl = useRef(false);
+  const first = useRef(true);
+
+  // Fit the shot's sphere into the part of the canvas the UI leaves free.
   useEffect(() => {
-    const cam = camera as THREE.PerspectiveCamera;
-    cam.fov = fov;
+    if (!shot) return;
+    const g = goal.current;
+    const availW = Math.max(1, vp.width - inset.left - inset.right);
+    const availH = Math.max(1, vp.height - inset.top - inset.bottom);
+    const t = Math.tan(THREE.MathUtils.degToRad(shot.fov / 2));
+    const fitTan = Math.min(t * (availH / vp.height), t * (vp.width / vp.height) * (availW / vp.width));
+    // Portrait screens frame by width, where the conservative sphere fit runs tight.
+    const dist = (shot.radius / Math.sin(Math.atan(fitTan))) * (isMobile ? shot.mobilePad ?? shot.pad * 1.08 : shot.pad);
+    g.look.copy(shot.look);
+    g.pos.copy(shot.dir).normalize().multiplyScalar(dist).add(shot.look);
+    g.fov = shot.fov;
+    userHasControl.current = false;
+
+    if (first.current) {
+      first.current = false;
+      cam.position.copy(g.pos).multiplyScalar(1.35);
+      cam.fov = g.fov;
+    }
+  }, [shot, inset, vp.width, vp.height, isMobile, cam]);
+
+  useFrame((_, rawDt) => {
+    const c = controls.current;
+    if (!c || !shot) return;
+    const dt = Math.min(rawDt, 0.1);
+    const k = 1 - Math.exp(-dt * 3.2);
+    const g = goal.current;
+
+    if (!userHasControl.current) {
+      cam.position.lerp(g.pos, k);
+      c.target.lerp(g.look, k);
+    }
+    cam.fov += (g.fov - cam.fov) * k;
+    // Shift the projection so the subject centres in the space the UI leaves free.
+    const tx = -(inset.left - inset.right) / 2;
+    const ty = (inset.bottom - inset.top) / 2;
+    off.current.x += (tx - off.current.x) * k;
+    off.current.y += (ty - off.current.y) * k;
+    cam.setViewOffset(vp.width, vp.height, off.current.x, off.current.y, vp.width, vp.height);
+    cam.far = cam.position.distanceTo(c.target) * 4 + 500;
     cam.updateProjectionMatrix();
-  }, [camera, fov]);
-  return null;
+
+    // Let the page scroll vertically over the canvas; horizontal drags orbit.
+    if (gl.domElement.style.touchAction !== "pan-y") gl.domElement.style.touchAction = "pan-y";
+
+    const b = bearingRef?.current;
+    if (b) {
+      const az = Math.atan2(cam.position.x - c.target.x, cam.position.z - c.target.z);
+      b.setAttribute("transform", `rotate(${(-az * 180) / Math.PI} 32 32)`);
+    }
+  });
+
+  const onStart = useCallback(() => { userHasControl.current = true; }, []);
+
+  useEffect(() => {
+    if (!apiRef) return;
+    const turn = (f: (theta: number) => number) => {
+      const c = controls.current;
+      if (!c) return;
+      userHasControl.current = true;
+      const offset = cam.position.clone().sub(c.target);
+      const sph = new THREE.Spherical().setFromVector3(offset);
+      sph.theta = f(sph.theta);
+      cam.position.copy(c.target).add(offset.setFromSpherical(sph));
+      c.update();
+    };
+    apiRef.current = { setAzimuth: (rad) => turn(() => rad), rotateBy: (rad) => turn((t) => t + rad) };
+  }, [apiRef, cam]);
+
+  return (
+    <OrbitControls
+      ref={controls}
+      makeDefault
+      enableDamping
+      dampingFactor={0.08}
+      enablePan={false}
+      enableZoom={false}
+      rotateSpeed={0.6}
+      maxPolarAngle={Math.PI * 0.495}
+      onStart={onStart}
+    />
+  );
 }
 
-export default function SceneCore({ mode, room, viewIndex = 0, onLoaded, onPosUpdate, eventSource, frameloop = "always", touchDeltaRef, isMobile }: Props) {
-  const hideRoof = mode === "room";
-  const hideSecondFloor = mode === "room" && room?.floor === "ground";
+interface Props {
+  display: Display;
+  view: ViewId;
+  explode: number;
+  room: RoomDef | null;
+  roomView: number;
+  cutaway: boolean;
+  inset: Inset;
+  isMobile: boolean;
+  frameloop: "always" | "never";
+  onLoaded: () => void;
+  bearingRef?: React.RefObject<SVGGElement | null>;
+  apiRef?: React.RefObject<OrbitApi | null>;
+}
+
+// Linear, above 1 on purpose: neutral tone mapping compresses near-white, and this
+// is the input measured (Playwright pixel sample) to come out as the page's #f5f5f3.
+const BACKDROP: [number, number, number] = [1.2, 1.2, 1.18];
+
+export default function SceneCore({ display, view, explode, room, roomView, cutaway, inset, isMobile, frameloop, onLoaded, bearingRef, apiRef }: Props) {
+  const [info, setInfo] = useState<ModelInfo | null>(null);
+  const handleLoaded = useCallback((i: ModelInfo) => {
+    setInfo(i);
+    onLoaded();
+  }, [onLoaded]);
+
+  const section: Section = useMemo(() => {
+    if (!info || explode > 0.01) return { cutY: null, box: null };
+    if (room) return { cutY: cutFor(info, room.floor), box: roomBox(info, room) };
+    if (cutaway || view === "plan") return { cutY: cutFor(info, "second"), box: null };
+    return { cutY: null, box: null };
+  }, [info, room, cutaway, view, explode]);
+
+  const shot: Shot | null = useMemo(() => {
+    if (!info) return null;
+    if (room) return roomShot(info, room, roomView);
+    const s = BUILDING_SHOTS[view];
+    const look = new THREE.Vector3(0, view === "plan" ? 0 : info.size.y * 0.38, 0);
+    return { look, dir: new THREE.Vector3(...s.dir), radius: info.size.length() / 2, fov: s.fov, pad: s.pad, mobilePad: s.mobilePad };
+  }, [info, room, roomView, view]);
+
+  const span = info ? Math.max(info.size.x, info.size.z) : 40;
 
   return (
     <Canvas
-      className="absolute inset-0 w-full h-full"
-      shadows="soft"
-      camera={{ fov: 42, near: 0.1, far: 1000, position: [65, 28, 85] }}
-      dpr={[1, 1.5]}
+      shadows="percentage"
+      dpr={[1, isMobile ? 1.5 : 1.75]}
       frameloop={frameloop}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
-      eventSource={eventSource?.current ?? undefined}
-      eventPrefix="client"
-      onCreated={({ gl }) => {
-        gl.toneMapping = THREE.ACESFilmicToneMapping;
-        gl.toneMappingExposure = 0.75;
-      }}
+      camera={{ fov: 38, near: 0.5, far: 2000, position: [200, 160, 240] }}
+      gl={{ antialias: false, powerPreference: "high-performance", localClippingEnabled: true }}
+      aria-label="Interactive 3D model of a five-apartment house"
     >
-      {isMobile && <MobileFOV fov={62} />}
-      <color attach="background" args={["#0f0d0b"]} />
-      <fog attach="fog" args={["#0f0d0b", 220, 650]} />
+      <color attach="background" args={BACKDROP} />
 
-      <ambientLight color="#fff8e7" intensity={0.5} />
+      <hemisphereLight args={["#f3f6f9", "#d9d4ca", 1.0]} />
       <directionalLight
-        color="#ffe8c0" intensity={1.4}
-        position={[50, 80, 30]} castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-near={1} shadow-camera-far={500}
-        shadow-camera-left={-120} shadow-camera-right={120}
-        shadow-camera-top={120} shadow-camera-bottom={-120}
+        color="#fff3e2"
+        intensity={2.6}
+        position={[span * 0.9, span * 1.2, span * 0.5]}
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0003}
+        shadow-normalBias={0.08}
+        shadow-camera-left={-span}
+        shadow-camera-right={span}
+        shadow-camera-top={span}
+        shadow-camera-bottom={-span}
+        shadow-camera-far={span * 5}
       />
-      <directionalLight color="#8ab4d4" intensity={0.5} position={[-40, 30, -40]} />
-      <directionalLight color="#c8a96e" intensity={0.25} position={[0, -10, -60]} />
 
-      <mesh rotation-x={-Math.PI / 2} receiveShadow>
-        <planeGeometry args={[800, 800]} />
-        <meshStandardMaterial color="#0d0b09" roughness={1} metalness={0} />
+      <mesh rotation-x={-Math.PI / 2} position-y={-0.02} receiveShadow>
+        <planeGeometry args={[span * 12, span * 12]} />
+        <shadowMaterial transparent opacity={0.2} color="#151617" />
       </mesh>
 
-      <Environment preset="sunset" environmentIntensity={0.45} />
-
       <Suspense fallback={null}>
-        <HouseModel hideRoof={hideRoof} hideSecondFloor={hideSecondFloor} onLoaded={onLoaded} />
+        <Environment preset="city" environmentIntensity={display === "render" ? 0.55 : 0.3} />
+        <HouseModel display={display} explode={explode} section={section} onLoaded={handleLoaded} />
       </Suspense>
 
-      <ExteriorCamera active={mode === "exterior"} touchDeltaRef={touchDeltaRef} />
+      <EffectComposer multisampling={0} enableNormalPass={false}>
+        <N8AO aoRadius={5} distanceFalloff={1.2} intensity={2.2} halfRes={isMobile} color="#1a1b1d" />
+        <SMAA />
+        <ToneMapping mode={ToneMappingMode.NEUTRAL} />
+      </EffectComposer>
 
-      {mode === "room" && room && (
-        <RoomExplorer room={room} viewIndex={viewIndex} onPosUpdate={onPosUpdate} />
-      )}
+      <Rig shot={shot} inset={inset} isMobile={isMobile} bearingRef={bearingRef} apiRef={apiRef} />
     </Canvas>
   );
 }
