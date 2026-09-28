@@ -68,9 +68,11 @@ interface RigProps {
   isMobile: boolean;
   bearingRef?: React.RefObject<SVGGElement | null>;
   apiRef?: React.RefObject<OrbitApi | null>;
+  /** Bounding sphere of the model, for tight near/far planes. */
+  bounds: THREE.Sphere | null;
 }
 
-function Rig({ shot, inset, isMobile, bearingRef, apiRef }: RigProps) {
+function Rig({ shot, inset, isMobile, bearingRef, apiRef, bounds }: RigProps) {
   const { camera, size: vp, gl } = useThree();
   const cam = camera as THREE.PerspectiveCamera;
   const controls = useRef<OrbitControlsImpl>(null);
@@ -119,7 +121,13 @@ function Rig({ shot, inset, isMobile, bearingRef, apiRef }: RigProps) {
     off.current.x += (tx - off.current.x) * k;
     off.current.y += (ty - off.current.y) * k;
     cam.setViewOffset(vp.width, vp.height, off.current.x, off.current.y, vp.width, vp.height);
-    cam.far = cam.position.distanceTo(c.target) * 4 + 500;
+    // Hug the model with the depth range: a 0.5 ft near plane at 400 ft away
+    // leaves no depth precision, and coplanar Revit faces z-fight (flicker).
+    if (bounds) {
+      const d = cam.position.distanceTo(bounds.center);
+      cam.near = Math.max(0.5, d - bounds.radius * 1.6);
+      cam.far = d + bounds.radius * 2.5;
+    }
     cam.updateProjectionMatrix();
 
     // Let the page scroll vertically over the canvas; horizontal drags orbit.
@@ -206,6 +214,7 @@ export default function SceneCore({ display, view, explode, room, roomView, cuta
   }, [info, room, roomView, view]);
 
   const span = info ? Math.max(info.size.x, info.size.z) : 40;
+  const bounds = useMemo(() => (info ? info.box.getBoundingSphere(new THREE.Sphere()) : null), [info]);
 
   return (
     <Canvas
@@ -250,7 +259,7 @@ export default function SceneCore({ display, view, explode, room, roomView, cuta
         <ToneMapping mode={ToneMappingMode.NEUTRAL} />
       </EffectComposer>
 
-      <Rig shot={shot} inset={inset} isMobile={isMobile} bearingRef={bearingRef} apiRef={apiRef} />
+      <Rig shot={shot} inset={inset} isMobile={isMobile} bearingRef={bearingRef} apiRef={apiRef} bounds={bounds} />
     </Canvas>
   );
 }

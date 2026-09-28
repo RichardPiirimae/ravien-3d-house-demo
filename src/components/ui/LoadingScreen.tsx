@@ -13,7 +13,7 @@ export default function LoadingScreen({ loaded }: { loaded: boolean }) {
       aria-live="polite"
     >
       <div className="w-[min(320px,80vw)]">
-        <div className="display text-[28px]">Ravien</div>
+        <div className="display text-[28px]">3D House Demo</div>
         <div className="mt-6 h-[3px] w-full overflow-hidden rounded-full bg-line">
           <div className="h-full origin-left rounded-full bg-accent transition-transform duration-300" style={{ transform: `scaleX(${p / 100})` }} />
         </div>

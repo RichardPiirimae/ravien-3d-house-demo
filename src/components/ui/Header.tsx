@@ -1,6 +1,6 @@
 "use client";
 
-export const EMAIL = "ravienaisolutions@gmail.com";
+export const EMAIL = "info@ravien.eu";
 export const MAILTO = `mailto:${EMAIL}?subject=${encodeURIComponent("New project — drawings attached")}`;
 
 export const NAV = [
@@ -16,7 +16,7 @@ export default function Header({ active }: { active: SectionId }) {
     <header className="fixed inset-x-0 top-0 z-40 border-b border-line bg-bg">
       <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-8 px-5 md:px-10">
         <a href="#model" className="display text-[22px] tracking-[-0.02em] text-ink no-underline">
-          Ravien
+          3D House Demo
         </a>
         <nav aria-label="Sections" className="hidden md:block">
           <ul className="flex gap-7">

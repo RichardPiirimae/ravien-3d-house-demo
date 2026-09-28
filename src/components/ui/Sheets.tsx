@@ -88,7 +88,10 @@ export function Contact() {
         </div>
 
         <footer className="mt-28 flex flex-wrap items-center justify-between gap-4 border-t border-white/15 pt-6 text-[14px] text-white/60">
-          <span>© 2026 Ravien. Model: five-apartment house, 59°26′N 24°45′E.</span>
+          <span>
+            © 2026 3D House Demo, 59°26′N 24°45′E
+            <span className="ml-3">Built by <a href="https://ravien.eu" target="_blank" rel="noopener" className="text-white underline decoration-white/40 hover:decoration-white">Ravien</a></span>
+          </span>
           <span className="flex gap-6">
             <a href="https://www.linkedin.com/company/raviensolutions/" target="_blank" rel="noopener noreferrer" className="text-white/80 no-underline hover:text-white">LinkedIn</a>
             <a href="https://www.instagram.com/ravien.eu/" target="_blank" rel="noopener noreferrer" className="text-white/80 no-underline hover:text-white">Instagram</a>

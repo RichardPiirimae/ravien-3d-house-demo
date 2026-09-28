@@ -50,12 +50,16 @@ const EDGE_CLIP = [cutPlane, ...boxPlanes];
 const INK = "#26282b";
 const PAPER = "#ffffff";
 
-// Back faces of solids are only ever seen through a cut: fill them solid, as section drawings do.
+// Where the section cut opens a solid, its back faces show: fill them solid,
+// as section drawings do. Only while a cut is active — otherwise the hairline
+// cracks between Revit's curved wall segments would show as dark dashes.
+const pocheOn = { value: 0 };
 function withPoche<T extends THREE.Material>(m: T): T {
   m.onBeforeCompile = (shader) => {
-    shader.fragmentShader = shader.fragmentShader.replace(
+    shader.uniforms.pocheOn = pocheOn;
+    shader.fragmentShader = "uniform float pocheOn;\n" + shader.fragmentShader.replace(
       "#include <dithering_fragment>",
-      "#include <dithering_fragment>\n  if (!gl_FrontFacing) gl_FragColor = vec4(0.13, 0.135, 0.145, 1.0);"
+      "#include <dithering_fragment>\n  if (!gl_FrontFacing && pocheOn > 0.5) gl_FragColor = vec4(0.13, 0.135, 0.145, 1.0);"
     );
   };
   m.customProgramCacheKey = () => "poche";
@@ -239,6 +243,7 @@ export default function HouseModel({ display, explode, section, onLoaded }: Prop
       const d = goal[i] - c[i];
       if (Math.abs(d) > 1e-3) { c[i] += d * k; moving = true; } else c[i] = goal[i];
     }
+    pocheOn.value = section.cutY !== null || b ? 1 : 0;
     cutPlane.constant = c[0];
     boxPlanes[0].constant = -c[1];
     boxPlanes[1].constant = c[2];

@@ -9,9 +9,9 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "Ravien — Your building, live on the web",
+  title: "3D House Demo — interactive 3D house by Ravien",
   description:
-    "Ravien turns Revit and FBX drawings into interactive 3D websites. Explore a live five-apartment house, straight from its drawings.",
+    "A five-apartment house you can explore live in the browser: cut it open, walk into any apartment. Built by Ravien from the architect's Revit drawings.",
 };
 
 export const viewport: Viewport = {

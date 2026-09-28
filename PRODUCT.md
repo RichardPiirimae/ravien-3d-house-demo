@@ -22,8 +22,9 @@ The page is the product demo: the visitor is not shown screenshots of 3D work, t
 - Floor-plan JPGs, apartment copy and marketing copy are not binding; may be reworked without adding new factual claims.
 
 ## Brand Commitments
+- Site name: "3D House Demo" (a Ravien demo). Footer carries a "Built by Ravien" backlink to https://ravien.eu, as on the restaurant demo.
 - Name: Ravien (Ravien Studio).
-- Contact: ravienaisolutions@gmail.com; LinkedIn https://www.linkedin.com/company/raviensolutions/; Instagram https://www.instagram.com/ravien.eu/.
+- Contact: info@ravien.eu; LinkedIn https://www.linkedin.com/company/raviensolutions/; Instagram https://www.instagram.com/ravien.eu/.
 
 ## Evidence on Hand
 - The model itself, floor plans (`public/floorplan-*.jpg`).
